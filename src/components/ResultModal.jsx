@@ -1,0 +1,60 @@
+import React from 'react';
+
+export default function ResultModal({ isOpen, result, deityName, onClose }) {
+    if (!isOpen || !result) return null;
+
+    const getLevelClass = (level) => {
+        if (level.includes('下')) {
+            return "text-xl text-white bg-gray-600 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+        } else if (level.includes('吉')) {
+            return "text-xl text-white bg-red-800 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+        } else {
+            return "text-xl text-white bg-amber-700 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center backdrop-blur-md transition-opacity duration-300" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="paper-texture w-[90%] max-w-md min-h-[600px] p-8 relative animate-modal flex flex-col items-center border-l-4 border-r-4 border-double border-red-900/30">
+
+                {/* Corners */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-900/50 m-2"></div>
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-red-900/50 m-2"></div>
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-red-900/50 m-2"></div>
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-red-900/50 m-2"></div>
+
+                {/* Header */}
+                <div className="text-center border-b border-red-900/20 w-full pb-4 mb-2">
+                    <div className="text-red-900/60 font-calligraphy text-2xl mb-2">{deityName}靈籤</div>
+                    <h2 className="text-4xl text-black font-bold font-serif mb-3 tracking-widest">{result.title}</h2>
+                    <div className="flex justify-center">
+                        <span className={getLevelClass(result.level)}>{result.level}</span>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-grow w-full flex flex-row-reverse justify-center gap-6 py-4 overflow-y-auto">
+                    <div className="h-full pt-2">
+                        <div className="vertical-text text-2xl font-bold font-serif text-black leading-loose h-auto min-h-[250px] border-l-2 border-red-900/20 pl-6 whitespace-pre-line">
+                            {result.poem}
+                        </div>
+                    </div>
+
+                    <div className="h-full pt-2 flex flex-col items-center">
+                        <div className="bg-red-900/10 text-red-900 px-1 py-2 text-sm writing-mode-vertical mb-2 rounded font-serif" style={{ writingMode: 'vertical-rl' }}>聖意詳解</div>
+                        <div className="vertical-text text-lg text-gray-800 font-serif leading-loose h-auto min-h-[250px] whitespace-pre-line">
+                            {result.explain}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-4 pt-4 border-t border-red-900/20 w-full text-center">
+                    <button onClick={onClose} className="text-red-900 border border-red-900 px-6 py-2 rounded hover:bg-red-900 hover:text-white transition font-serif tracking-widest">
+                        收下籤詩
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

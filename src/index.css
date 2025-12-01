@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- 基礎設定 --- */
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #1a0f0f;
+  /* 深檀木色 */
+  background-image:
+    radial-gradient(circle at 50% 30%, rgba(160, 20, 20, 0.4), transparent 70%),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+  color: #e5e5e5;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 修改書法字體類別：改為黑體，並加粗以保持標題氣勢 */
+.font-calligraphy {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 900;
+}
+
+/* 強制覆蓋 Tailwind 的 font-serif 樣式，確保統一是黑體 */
+.font-serif {
+  font-family: 'Noto Sans TC', sans-serif !important;
+}
+
+/* --- 特效文字 --- */
+.text-gold {
+  background: linear-gradient(to bottom, #cfc09f 0%, #ffecb3 50%, #9e824c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.text-red-stamp {
+  color: #8B0000;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* --- 牌位/卡片樣式 --- */
+.deity-card {
+  background: linear-gradient(180deg, #2b1d1d 0%, #1a0f0f 100%);
+  border: 1px solid #5c4033;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+.deity-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #8B6914;
+  margin: 6px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.deity-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: #d4af37;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+}
+
+.deity-card:hover::before {
+  opacity: 1;
+  border-color: #d4af37;
+}
+
+/* --- 按鈕樣式 (仿木匾) --- */
+.btn-temple {
+  background: linear-gradient(to bottom, #8B0000, #5a0000);
+  border: 2px solid #b8860b;
+  box-shadow: 0 5px 0 #3d0000, 0 10px 10px rgba(0, 0, 0, 0.5);
+  color: #ffecb3;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.1s;
+}
+
+.btn-temple:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #3d0000, 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.btn-temple:disabled {
+  background: #4a4a4a;
+  border-color: #666;
+  color: #999;
+  box-shadow: none;
+  transform: translateY(4px);
+}
+
+/* --- 動畫 --- */
+@keyframes incense-smoke {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translateY(-100px) scale(3);
+    opacity: 0;
+  }
+}
+
+.smoke-particle {
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(5px);
+  animation: incense-smoke 4s infinite linear;
+}
+
+/* 繼承原有的搖晃與掉落動畫 */
+@keyframes shake {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-5deg) translate(-5px, 2px);
+  }
+
+  50% {
+    transform: rotate(5deg) translate(5px, 2px);
+  }
+
+  75% {
+    transform: rotate(-5deg) translate(-5px, 2px);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes dropStick {
+  0% {
+    transform: translateY(0) rotate(0) scale(0.8);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-100px) rotate(-5deg) scale(0.8);
+  }
+
+  100% {
+    transform: translateY(300px) rotate(10deg) scale(1.5);
+    opacity: 1;
+  }
+
+  /* 放大 */
+}
+
+.animate-drop {
+  animation: dropStick 1s cubic-bezier(0.5, 0, 0.8, 1) forwards;
+}
+
+@keyframes modalShow {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-modal {
+  animation: modalShow 0.4s ease-out forwards;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.25em;
+}
+
+/* --- 籤詩紙樣式 --- */
+.paper-texture {
+  background-color: #fff9e6;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+/* 隱藏捲軸 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}

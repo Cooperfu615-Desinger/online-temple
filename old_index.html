@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>線上靈籤總廟 - 虔誠版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 修改字體引入：改為 Noto Sans TC (黑體) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 基礎設定 --- */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1a0f0f; /* 深檀木色 */
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(160, 20, 20, 0.4), transparent 70%),
+                url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+            color: #e5e5e5;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 修改書法字體類別：改為黑體，並加粗以保持標題氣勢 */
+        .font-calligraphy { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            font-weight: 900; 
+        }
+
+        /* 強制覆蓋 Tailwind 的 font-serif 樣式，確保統一是黑體 */
+        .font-serif {
+            font-family: 'Noto Sans TC', sans-serif !important;
+        }
+
+        /* --- 特效文字 --- */
+        .text-gold {
+            background: linear-gradient(to bottom, #cfc09f 0%, #ffecb3 50%, #9e824c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .text-red-stamp {
+            color: #8B0000;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+        }
+
+        /* --- 牌位/卡片樣式 --- */
+        .deity-card {
+            background: linear-gradient(180deg, #2b1d1d 0%, #1a0f0f 100%);
+            border: 1px solid #5c4033;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .deity-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 2px solid #8B6914;
+            margin: 6px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .deity-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .deity-card:hover::before {
+            opacity: 1;
+            border-color: #d4af37;
+        }
+
+        /* --- 按鈕樣式 (仿木匾) --- */
+        .btn-temple {
+            background: linear-gradient(to bottom, #8B0000, #5a0000);
+            border: 2px solid #b8860b;
+            box-shadow: 0 5px 0 #3d0000, 0 10px 10px rgba(0,0,0,0.5);
+            color: #ffecb3;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+            transition: all 0.1s;
+        }
+
+        .btn-temple:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #3d0000, 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .btn-temple:disabled {
+            background: #4a4a4a;
+            border-color: #666;
+            color: #999;
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        /* --- 動畫 --- */
+        @keyframes incense-smoke {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-100px) scale(3); opacity: 0; }
+        }
+
+        .smoke-particle {
+            position: absolute;
+            bottom: 0;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: incense-smoke 4s infinite linear;
+        }
+
+        /* 繼承原有的搖晃與掉落動畫 */
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg) translate(-5px, 2px); }
+            50% { transform: rotate(5deg) translate(5px, 2px); }
+            75% { transform: rotate(-5deg) translate(-5px, 2px); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-shake { animation: shake 0.5s ease-in-out infinite; }
+
+        @keyframes dropStick {
+            0% { transform: translateY(0) rotate(0) scale(0.8); opacity: 0; }
+            30% { opacity: 1; transform: translateY(-100px) rotate(-5deg) scale(0.8); }
+            100% { transform: translateY(300px) rotate(10deg) scale(1.5); opacity: 1; } /* 放大 */
+        }
+        .animate-drop { animation: dropStick 1s cubic-bezier(0.5, 0, 0.8, 1) forwards; }
+
+        @keyframes modalShow {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-modal { animation: modalShow 0.4s ease-out forwards; }
+
+        .vertical-text { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 0.25em; }
+
+        /* --- 籤詩紙樣式 --- */
+        .paper-texture {
+            background-color: #fff9e6;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* 隱藏捲軸 */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center relative">
+
+    <!-- 背景煙霧特效 (裝飾用) -->
+    <div class="absolute inset-x-0 bottom-0 h-64 pointer-events-none opacity-30 flex justify-center gap-20">
+        <div class="smoke-particle" style="left: 20%; animation-duration: 5s; animation-delay: 0s;"></div>
+        <div class="smoke-particle" style="left: 50%; animation-duration: 7s; animation-delay: 2s;"></div>
+        <div class="smoke-particle" style="left: 80%; animation-duration: 6s; animation-delay: 1s;"></div>
+    </div>
+
+    <!-- 頂部標題列 -->
+    <div class="absolute top-0 w-full p-6 z-30 flex justify-between items-start bg-gradient-to-b from-black/80 to-transparent">
+        <div>
+            <h1 class="text-4xl font-calligraphy text-gold tracking-widest drop-shadow-xl">線上靈籤</h1>
+            <p class="text-[#d4af37] text-xs tracking-[0.5em] mt-2 opacity-80 uppercase">Fortune Sticks</p>
+        </div>
+        <button id="backBtn" onclick="returnToMenu()" class="hidden border border-[#d4af37] text-[#d4af37] px-4 py-1 rounded-sm text-sm hover:bg-[#d4af37] hover:text-black transition uppercase tracking-widest bg-black/40 backdrop-blur-sm">
+            返回
+        </button>
+    </div>
+
+    <!-- 1. 選擇神祇選單 -->
+    <div id="selection-menu" class="w-full h-full flex items-center justify-center p-4 z-20 overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl px-4">
+            
+            <!-- 媽祖 -->
+            <div onclick="selectDeity('mazu')" class="deity-card group h-[400px] flex flex-col items-center justify-center cursor-pointer p-6">
+                <div class="text-6xl font-calligraphy text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)] group-hover:scale-110 transition-transform duration-500">
+                    媽
+                </div>
+                <div class="border-y border-[#d4af37] py-2 w-full text-center mb-4">
+                    <h3 class="text-2xl font-bold text-gold tracking-widest">天上聖母</h3>
+                </div>
+                <div class="text-gray-400 text-sm vertical-text h-24 leading-loose tracking-widest border-r border-gray-700 pr-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                    六十甲子籤<br>運勢指引
+                </div>
+                <div class="mt-8 text-[#d4af37] text-xs border border-[#d4af37] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    叩問聖意
+                </div>
+            </div>
+
+            <!-- 觀音 -->
+            <div onclick="selectDeity('guanyin')" class="deity-card group h-[400px] flex flex-col items-center justify-center cursor-pointer p-6">
+                <div class="text-6xl font-calligraphy text-emerald-500 mb-6 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-500">
+                    觀
+                </div>
+                <div class="border-y border-[#d4af37] py-2 w-full text-center mb-4">
+                    <h3 class="text-2xl font-bold text-gold tracking-widest">觀音佛祖</h3>
+                </div>
+                <div class="text-gray-400 text-sm vertical-text h-24 leading-loose tracking-widest border-r border-gray-700 pr-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                    觀音靈籤<br>慈悲解惑
+                </div>
+                <div class="mt-8 text-[#d4af37] text-xs border border-[#d4af37] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    叩問聖意
+                </div>
+            </div>
+
+            <!-- 關帝 -->
+            <div onclick="selectDeity('guandi')" class="deity-card group h-[400px] flex flex-col items-center justify-center cursor-pointer p-6">
+                <div class="text-6xl font-calligraphy text-amber-600 mb-6 drop-shadow-[0_0_10px_rgba(217,119,6,0.5)] group-hover:scale-110 transition-transform duration-500">
+                    關
+                </div>
+                <div class="border-y border-[#d4af37] py-2 w-full text-center mb-4">
+                    <h3 class="text-2xl font-bold text-gold tracking-widest">關聖帝君</h3>
+                </div>
+                <div class="text-gray-400 text-sm vertical-text h-24 leading-loose tracking-widest border-r border-gray-700 pr-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                    關帝靈籤<br>功名財運
+                </div>
+                <div class="mt-8 text-[#d4af37] text-xs border border-[#d4af37] px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    叩問聖意
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 2. 求籤主場景 -->
+    <div id="game-scene" class="hidden relative w-full h-full flex flex-col items-center justify-center">
+        
+        <!-- 當前神祇標題 (背景浮水印) -->
+        <div id="scene-bg-text" class="absolute top-1/4 text-[120px] font-calligraphy text-[#d4af37] opacity-5 select-none pointer-events-none whitespace-nowrap">
+            天上聖母
+        </div>
+
+        <!-- 掉落的籤 (初始隱藏) -->
+        <div id="falling-stick-container" class="absolute z-20 pointer-events-none opacity-0" style="bottom: 35%;">
+            <svg width="30" height="240" viewBox="0 0 20 200">
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <rect x="2" y="0" width="16" height="200" rx="1" fill="#eecfa1" stroke="#8B4513" stroke-width="0.5" filter="url(#glow)"/>
+                <rect x="2" y="0" width="16" height="40" rx="1" fill="#b91c1c"/>
+                <text id="stick-text-top" x="10" y="20" font-size="14" fill="#ffd700" text-anchor="middle" dominant-baseline="middle" font-family="serif" font-weight="bold">聖</text>
+                <text id="stick-text-bottom" x="10" y="110" font-size="12" fill="#5e2f0d" text-anchor="middle" dominant-baseline="middle" writing-mode="tb" font-family="serif" letter-spacing="4">聖母靈籤</text>
+            </svg>
+        </div>
+
+        <!-- 籤筒容器 -->
+        <div id="tube-container" class="relative origin-bottom z-10 mt-20">
+            <svg width="260" height="360" viewBox="0 0 200 300" class="overflow-visible drop-shadow-2xl">
+                <defs>
+                    <linearGradient id="bambooGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#2a1a15;stop-opacity:1" />
+                        <stop offset="30%" style="stop-color:#5c3a2e;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#6d4c41;stop-opacity:1" />
+                        <stop offset="70%" style="stop-color:#5c3a2e;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2a1a15;stop-opacity:1" />
+                    </linearGradient>
+                    <radialGradient id="holeGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="50%" style="stop-color:#0f0808;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#2a1a15;stop-opacity:1" />
+                    </radialGradient>
+                </defs>
+
+                <!-- 靜態籤群 (顏色調深) -->
+                <g id="static-sticks" transform="translate(0, 10)">
+                    <rect x="60" y="-30" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(-10 60 100)"/>
+                    <rect x="80" y="-40" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(-5 80 100)"/>
+                    <rect x="100" y="-45" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(0 100 100)"/>
+                    <rect x="120" y="-35" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(6 120 100)"/>
+                    <rect x="135" y="-25" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(12 135 100)"/>
+                    <!-- 籤頭 -->
+                    <rect x="60" y="-30" width="12" height="25" fill="#8B0000" transform="rotate(-10 60 100)"/>
+                    <rect x="80" y="-40" width="12" height="25" fill="#8B0000" transform="rotate(-5 80 100)"/>
+                    <rect x="100" y="-45" width="12" height="25" fill="#8B0000" transform="rotate(0 100 100)"/>
+                    <rect x="120" y="-35" width="12" height="25" fill="#8B0000" transform="rotate(6 120 100)"/>
+                    <rect x="135" y="-25" width="12" height="25" fill="#8B0000" transform="rotate(12 135 100)"/>
+                </g>
+
+                <!-- 筒身 -->
+                <g>
+                    <!-- 主體 -->
+                    <path d="M40,80 L160,80 L152,280 L48,280 Z" fill="url(#bambooGradient)" stroke="#1a0f0f" stroke-width="2" />
+                    <!-- 筒口 -->
+                    <ellipse cx="100" cy="80" rx="60" ry="15" fill="url(#holeGradient)" stroke="#3e2723" stroke-width="2"/>
+                    
+                    <!-- 金屬箍環 (裝飾) -->
+                    <path d="M41,100 Q100,115 159,100" fill="none" stroke="#d4af37" stroke-width="4" stroke-opacity="0.8"/>
+                    <path d="M47,260 Q100,275 153,260" fill="none" stroke="#d4af37" stroke-width="4" stroke-opacity="0.8"/>
+
+                    <!-- 標籤牌 -->
+                    <rect x="75" y="125" width="50" height="110" fill="#8B0000" stroke="#d4af37" stroke-width="2" rx="2">
+                        <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
+                    </rect>
+                    
+                    <!-- 籤筒文字 -->
+                    <text id="tube-text" x="100" y="180" font-family="'Zhi Mang Xing', serif" font-size="36" fill="#FFD700" text-anchor="middle" dominant-baseline="middle" writing-mode="tb" style="text-shadow: 1px 1px 2px black;">聖母</text>
+                </g>
+            </svg>
+        </div>
+
+        <!-- 互動區域 -->
+        <div class="absolute bottom-16 w-full flex justify-center z-30">
+            <button id="drawBtn" onclick="startDrawing()" class="btn-temple text-2xl px-16 py-4 rounded-lg font-bold tracking-[0.5em]">
+                開始求籤
+            </button>
+            <button id="resetBtn" onclick="resetStick()" class="hidden btn-temple bg-gradient-to-b from-gray-700 to-gray-900 border-gray-500 text-xl px-12 py-3 rounded-lg font-bold tracking-widest">
+                再求一支
+            </button>
+        </div>
+    </div>
+
+    <!-- 結果模態框 (Overlay) -->
+    <div id="resultModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center backdrop-blur-md transition-opacity duration-300" onclick="if(event.target === this) return;">
+        
+        <!-- 籤詩紙本體 -->
+        <div class="paper-texture w-[90%] max-w-md min-h-[600px] p-8 relative animate-modal flex flex-col items-center border-l-4 border-r-4 border-double border-red-900/30">
+            
+            <!-- 紙張裝飾角 -->
+            <div class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-900/50 m-2"></div>
+            <div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-red-900/50 m-2"></div>
+            <div class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-red-900/50 m-2"></div>
+            <div class="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-red-900/50 m-2"></div>
+
+            <!-- 標題區 -->
+            <div class="text-center border-b border-red-900/20 w-full pb-4 mb-2">
+                <div id="modal-deity-name" class="text-red-900/60 font-calligraphy text-2xl mb-2">天上聖母靈籤</div>
+                <h2 id="signTitle" class="text-4xl text-black font-bold font-serif mb-3 tracking-widest">第六十籤</h2>
+                <div class="flex justify-center">
+                    <span id="signLevel" class="text-xl text-white bg-red-800 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif">上上大吉</span>
+                </div>
+            </div>
+
+            <!-- 內容區 (直排) -->
+            <div class="flex-grow w-full flex flex-row-reverse justify-center gap-6 py-4 overflow-y-auto">
+                <!-- 詩句 -->
+                <div class="h-full pt-2">
+                    <div id="signPoem" class="vertical-text text-2xl font-bold font-serif text-black leading-loose h-auto min-h-[250px] border-l-2 border-red-900/20 pl-6">
+                        <!-- JS 填充 -->
+                    </div>
+                </div>
+
+                <!-- 聖意/解曰 -->
+                <div class="h-full pt-2 flex flex-col items-center">
+                    <div class="bg-red-900/10 text-red-900 px-1 py-2 text-sm writing-mode-vertical mb-2 rounded font-serif">聖意詳解</div>
+                    <div id="signExplain" class="vertical-text text-lg text-gray-800 font-serif leading-loose h-auto min-h-[250px]">
+                        <!-- JS 填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部動作 -->
+            <div class="mt-4 pt-4 border-t border-red-900/20 w-full text-center">
+                <button onclick="closeModal()" class="text-red-900 border border-red-900 px-6 py-2 rounded hover:bg-red-900 hover:text-white transition font-serif tracking-widest">
+                    收下籤詩
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS 邏輯 (與舊版相同結構，僅適配新 ID) -->
+    <script>
+        // 資料庫 (內容簡化示範，請自行擴充)
+        const fortuneDatabase = {
+            mazu: {
+                name: "天上聖母",
+                shortName: "聖母",
+                theme: "red",
+                data: [
+                    { title: "第一籤【甲子】", level: "大吉", poem: "日出便見風雲散\n光明清淨照世間\n一向前途通節奏\n萬事清吉保平安", explain: "【運勢】旭日東昇，晦氣全消。\n【事業】時來運轉，前途光明。\n【建議】心存正念，靜待佳音。" },
+                    { title: "第七籤【乙丑】", level: "上上", poem: "雲開月出正分明\n不須進退問前程\n婚姻皆由天註定\n和合清吉萬事成", explain: "【運勢】雲開見月，局勢明朗。\n【姻緣】天作之合，切勿猶豫。\n【建議】順天而行，大膽去做。" },
+                    { title: "第十三籤【丙子】", level: "下下", poem: "命中正逢羅孛關\n用盡心機總未休\n作福問神難得過\n恰是行舟上高灘", explain: "【運勢】行舟擱淺，進退維谷。\n【警示】心機枉然，徒勞無功。\n【建議】多行善事，忍耐守成。" }
+                ]
+            },
+            guanyin: {
+                name: "觀音佛祖",
+                shortName: "觀音",
+                theme: "green",
+                data: [
+                    { title: "第一籤【上上】", level: "大吉", poem: "開天闢地作良緣\n吉日良時萬物全\n若得此籤非小可\n人行忠正帝王宣", explain: "【運勢】萬象更新，吉星高照。\n【功名】名列前茅，貴人提拔。\n【建議】持身中正，必有後福。" },
+                    { title: "第八籤【中平】", level: "中吉", poem: "茂林松柏正興旺\n雨雪風霜總莫欺\n異日忽然成大用\n功名成就棟樑材", explain: "【運勢】松柏耐寒，先苦後甘。\n【學業】紮穩根基，大器晚成。\n【建議】不畏艱難，堅持到底。" }
+                ]
+            },
+            guandi: {
+                name: "關聖帝君",
+                shortName: "關帝",
+                theme: "orange",
+                data: [
+                    { title: "第一籤【甲甲】", level: "大吉", poem: "巍巍獨步向雲間\n玉殿千官第一班\n富貴榮華天付汝\n福如東海壽如山", explain: "【運勢】獨占鰲頭，福壽雙全。\n【事業】飛黃騰達，無人能及。\n【建議】把握良機，更上層樓。" },
+                    { title: "第二十四籤", level: "下籤", poem: "一春萬事苦憂煎\n夏裏營求始帖然\n更遇秋成冬至後\n恰如騎鶴與腰纏", explain: "【運勢】早春艱辛，秋冬轉好。\n【財運】先損後得，不可急躁。\n【建議】沈潛忍耐，靜待時機。" }
+                ]
+            }
+        };
+
+        // 狀態
+        let currentSystem = null;
+        let isShaking = false;
+
+        // 元素
+        const selectionMenu = document.getElementById('selection-menu');
+        const gameScene = document.getElementById('game-scene');
+        const backBtn = document.getElementById('backBtn');
+        const tube = document.getElementById('tube-container');
+        const fallingStick = document.getElementById('falling-stick-container');
+        const drawBtn = document.getElementById('drawBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modal = document.getElementById('resultModal');
+        const tubeText = document.getElementById('tube-text');
+        const stickTextTop = document.getElementById('stick-text-top');
+        const stickTextBottom = document.getElementById('stick-text-bottom');
+        const bgText = document.getElementById('scene-bg-text');
+        const modalDeityName = document.getElementById('modal-deity-name');
+
+        function selectDeity(key) {
+            currentSystem = key;
+            const sys = fortuneDatabase[key];
+
+            // 更新 UI 文字
+            bgText.innerText = sys.name;
+            modalDeityName.innerText = sys.name + "靈籤";
+            tubeText.innerText = sys.shortName; // 筒身文字簡潔化
+            stickTextTop.innerText = sys.shortName[0];
+            stickTextBottom.innerText = sys.shortName + "靈籤";
+
+            // 轉場
+            selectionMenu.style.display = 'none';
+            gameScene.classList.remove('hidden');
+            backBtn.classList.remove('hidden');
+
+            resetStick();
+        }
+
+        function returnToMenu() {
+            gameScene.classList.add('hidden');
+            backBtn.classList.add('hidden');
+            selectionMenu.style.display = 'flex';
+            currentSystem = null;
+        }
+
+        function startDrawing() {
+            if (isShaking) return;
+            isShaking = true;
+            drawBtn.disabled = true;
+            drawBtn.innerText = "誠心祈求中...";
+            drawBtn.classList.remove('btn-temple'); // 暫時移除樣式以免閃爍，或者保持
+            drawBtn.style.opacity = "0.8";
+
+            tube.classList.add('animate-shake');
+            
+            // 隨機搖晃 2-3 秒
+            setTimeout(stopShakingAndDrop, 2000 + Math.random() * 1000);
+        }
+
+        function stopShakingAndDrop() {
+            tube.classList.remove('animate-shake');
+            
+            fallingStick.classList.remove('opacity-0');
+            fallingStick.classList.add('animate-drop');
+
+            setTimeout(showResult, 1500); // 等待動畫結束
+        }
+
+        function showResult() {
+            const sys = fortuneDatabase[currentSystem];
+            const randomIndex = Math.floor(Math.random() * sys.data.length);
+            const fortune = sys.data[randomIndex];
+
+            document.getElementById('signTitle').innerText = fortune.title;
+            const levelEl = document.getElementById('signLevel');
+            levelEl.innerText = fortune.level;
+            
+            // 吉凶配色
+            if (fortune.level.includes('下')) {
+                levelEl.className = "text-xl text-white bg-gray-600 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+            } else if (fortune.level.includes('吉')) {
+                levelEl.className = "text-xl text-white bg-red-800 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+            } else {
+                levelEl.className = "text-xl text-white bg-amber-700 px-6 py-1 rounded shadow-inner tracking-[0.5em] font-serif";
+            }
+
+            document.getElementById('signPoem').innerText = fortune.poem;
+            document.getElementById('signExplain').innerText = fortune.explain;
+
+            modal.classList.remove('hidden');
+            
+            // UI 切換
+            drawBtn.classList.add('hidden');
+            resetBtn.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        function resetStick() {
+            modal.classList.add('hidden');
+            isShaking = false;
+            
+            fallingStick.classList.remove('animate-drop');
+            fallingStick.classList.add('opacity-0');
+            
+            drawBtn.disabled = false;
+            drawBtn.innerText = "開始求籤";
+            drawBtn.style.opacity = "1";
+            drawBtn.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
