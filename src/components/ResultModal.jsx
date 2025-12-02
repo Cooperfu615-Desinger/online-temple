@@ -33,16 +33,20 @@ export default function ResultModal({ isOpen, result, deityName, onClose }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-grow w-full flex flex-row-reverse justify-center gap-6 py-4 overflow-y-auto">
-                    <div className="h-full pt-2">
-                        <div className="vertical-text text-2xl font-bold font-serif text-black leading-loose h-auto min-h-[250px] border-l-2 border-red-900/20 pl-6 whitespace-pre-line">
+                <div className="flex-grow w-full flex flex-col items-center gap-6 py-4 overflow-y-auto">
+                    {/* Poem (Vertical) */}
+                    <div className="w-full flex justify-center pt-2">
+                        <div className="vertical-text text-2xl font-bold font-serif text-black leading-loose h-auto min-h-[200px] border-l-2 border-red-900/20 pl-6 whitespace-pre-line">
                             {result.poem}
                         </div>
                     </div>
 
-                    <div className="h-full pt-2 flex flex-col items-center">
-                        <div className="bg-red-900/10 text-red-900 px-1 py-2 text-sm writing-mode-vertical mb-2 rounded font-serif" style={{ writingMode: 'vertical-rl' }}>聖意詳解</div>
-                        <div className="vertical-text text-lg text-gray-800 font-serif leading-loose h-auto min-h-[250px] whitespace-pre-line">
+                    {/* Explanation (Horizontal) */}
+                    <div className="w-full px-4 flex flex-col items-center">
+                        <div className="bg-red-900/10 text-red-900 px-4 py-1 text-sm mb-3 rounded font-serif font-bold tracking-widest">
+                            聖意詳解
+                        </div>
+                        <div className="text-lg text-gray-800 font-serif leading-loose whitespace-pre-line text-justify w-full">
                             {result.explain}
                         </div>
                     </div>

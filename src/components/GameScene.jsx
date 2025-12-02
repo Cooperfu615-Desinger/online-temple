@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import bwaYin from '../assets/bwa_yin.png';
+import bwaYang from '../assets/bwa_yang.png';
 
 export default function GameScene({ deity, onDrawComplete }) {
     const [isShaking, setIsShaking] = useState(false);
@@ -28,8 +30,6 @@ export default function GameScene({ deity, onDrawComplete }) {
                 // Instead of completing immediately, start Bwa Bwei flow
                 setPendingFortune(result);
                 setBwaBweiState('prompt');
-                // onDrawComplete(result); // Moved to after Bwa Bwei
-                // setBtnState('reset');
             }, 1500);
         }, 2000 + Math.random() * 1000);
     };
@@ -57,7 +57,7 @@ export default function GameScene({ deity, onDrawComplete }) {
 
                 setTimeout(() => {
                     reset(); // Reset game to start
-                }, 2000);
+                }, 2500);
             }
         }, 1000);
     };
@@ -199,17 +199,31 @@ export default function GameScene({ deity, onDrawComplete }) {
                         )}
 
                         {bwaBweiState === 'throwing' && (
-                            <div className="animate-pulse">
-                                <div className="text-6xl mb-4">🌙 🌙</div>
-                                <p className="text-[#d4af37] text-xl">擲筊中...</p>
+                            <div className="animate-pulse flex justify-center gap-8 mb-8">
+                                <img src={bwaYin} alt="Moon Block" className="w-24 h-24 animate-spin-slow" />
+                                <img src={bwaYang} alt="Moon Block" className="w-24 h-24 animate-spin-slow" />
                             </div>
                         )}
 
                         {bwaBweiState === 'result' && (
                             <div className="animate-fade-in">
-                                <div className="text-6xl mb-4">
-                                    {bwaBweiResult === 'saint' ? '🌙 🌑' :
-                                        bwaBweiResult === 'laugh' ? '🌙 🌙' : '🌑 🌑'}
+                                <div className="flex justify-center gap-8 mb-8">
+                                    {bwaBweiResult === 'saint' ? (
+                                        <>
+                                            <img src={bwaYin} alt="Yin" className="w-24 h-24 drop-shadow-lg transform rotate-12" />
+                                            <img src={bwaYang} alt="Yang" className="w-24 h-24 drop-shadow-lg transform -rotate-12" />
+                                        </>
+                                    ) : bwaBweiResult === 'laugh' ? (
+                                        <>
+                                            <img src={bwaYang} alt="Yang" className="w-24 h-24 drop-shadow-lg transform rotate-12" />
+                                            <img src={bwaYang} alt="Yang" className="w-24 h-24 drop-shadow-lg transform -rotate-12" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <img src={bwaYin} alt="Yin" className="w-24 h-24 drop-shadow-lg transform rotate-12" />
+                                            <img src={bwaYin} alt="Yin" className="w-24 h-24 drop-shadow-lg transform -rotate-12" />
+                                        </>
+                                    )}
                                 </div>
                                 <h3 className={`text-3xl font-bold mb-4 ${bwaBweiResult === 'saint' ? 'text-green-500' : 'text-red-500'}`}>
                                     {bwaBweiResult === 'saint' ? '聖 筊' :
