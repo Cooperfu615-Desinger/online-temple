@@ -5,6 +5,11 @@ export default function GameScene({ deity, onDrawComplete }) {
     const [stickState, setStickState] = useState('hidden'); // hidden, dropping, dropped
     const [btnState, setBtnState] = useState('start'); // start, drawing, reset
 
+    // Bwa Bwei State
+    const [bwaBweiState, setBwaBweiState] = useState('idle'); // idle, prompt, throwing, result
+    const [pendingFortune, setPendingFortune] = useState(null);
+    const [bwaBweiResult, setBwaBweiResult] = useState(null); // saint, laugh, yin
+
     const startDrawing = () => {
         if (isShaking) return;
         setIsShaking(true);
@@ -19,15 +24,50 @@ export default function GameScene({ deity, onDrawComplete }) {
             setTimeout(() => {
                 const randomIndex = Math.floor(Math.random() * deity.data.length);
                 const result = deity.data[randomIndex];
-                onDrawComplete(result);
-                setBtnState('reset');
+
+                // Instead of completing immediately, start Bwa Bwei flow
+                setPendingFortune(result);
+                setBwaBweiState('prompt');
+                // onDrawComplete(result); // Moved to after Bwa Bwei
+                // setBtnState('reset');
             }, 1500);
         }, 2000 + Math.random() * 1000);
+    };
+
+    const throwBwaBwei = () => {
+        setBwaBweiState('throwing');
+
+        // Simulate throw delay
+        setTimeout(() => {
+            const rand = Math.random();
+            if (rand < 0.5) {
+                // 50% Saint's Cup (Success)
+                setBwaBweiResult('saint');
+                setBwaBweiState('result');
+
+                setTimeout(() => {
+                    onDrawComplete(pendingFortune);
+                    setBtnState('reset');
+                    setBwaBweiState('idle'); // Close modal
+                }, 1500);
+            } else {
+                // 50% Laughing/Yin Cup (Fail)
+                setBwaBweiResult(rand < 0.75 ? 'laugh' : 'yin');
+                setBwaBweiState('result');
+
+                setTimeout(() => {
+                    reset(); // Reset game to start
+                }, 2000);
+            }
+        }, 1000);
     };
 
     const reset = () => {
         setStickState('hidden');
         setBtnState('start');
+        setBwaBweiState('idle');
+        setPendingFortune(null);
+        setBwaBweiResult(null);
     };
 
     // Reset when deity changes
@@ -130,6 +170,61 @@ export default function GameScene({ deity, onDrawComplete }) {
                     </button>
                 )}
             </div>
+
+            {/* Bwa Bwei Modal */}
+            {bwaBweiState !== 'idle' && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="bg-[#1a0f0f] border-2 border-[#d4af37] p-8 rounded-xl max-w-md w-full text-center shadow-2xl relative overflow-hidden">
+                        {/* Decorative corners */}
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#d4af37]"></div>
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#d4af37]"></div>
+                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#d4af37]"></div>
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#d4af37]"></div>
+
+                        {bwaBweiState === 'prompt' && (
+                            <div className="animate-fade-in">
+                                <h3 className="text-2xl text-[#d4af37] font-bold mb-6">
+                                    已抽出 {pendingFortune?.title}
+                                </h3>
+                                <p className="text-gray-300 mb-8 text-lg">
+                                    請擲筊請示神明是否為此籤
+                                </p>
+                                <button
+                                    onClick={throwBwaBwei}
+                                    className="bg-[#b91c1c] hover:bg-[#8B0000] text-[#ffd700] text-xl px-10 py-3 rounded-full font-bold transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(185,28,28,0.5)]"
+                                >
+                                    擲 筊
+                                </button>
+                            </div>
+                        )}
+
+                        {bwaBweiState === 'throwing' && (
+                            <div className="animate-pulse">
+                                <div className="text-6xl mb-4">🌙 🌙</div>
+                                <p className="text-[#d4af37] text-xl">擲筊中...</p>
+                            </div>
+                        )}
+
+                        {bwaBweiState === 'result' && (
+                            <div className="animate-fade-in">
+                                <div className="text-6xl mb-4">
+                                    {bwaBweiResult === 'saint' ? '🌙 🌑' :
+                                        bwaBweiResult === 'laugh' ? '🌙 🌙' : '🌑 🌑'}
+                                </div>
+                                <h3 className={`text-3xl font-bold mb-4 ${bwaBweiResult === 'saint' ? 'text-green-500' : 'text-red-500'}`}>
+                                    {bwaBweiResult === 'saint' ? '聖 筊' :
+                                        bwaBweiResult === 'laugh' ? '笑 筊' : '陰 筊'}
+                                </h3>
+                                <p className="text-gray-300 text-lg">
+                                    {bwaBweiResult === 'saint'
+                                        ? '神明應以此籤，即將顯示籤詩...'
+                                        : '此籤非聖意，請重新誠心祈求'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
