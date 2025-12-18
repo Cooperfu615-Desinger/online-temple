@@ -170,28 +170,19 @@ export default function GameScene({ deity, onDrawComplete }) {
             {/* 神明圖片 - 畫面中央視覺焦點 */}
             <div className="relative z-10 flex flex-col items-center">
                 <div className="relative">
-                    {/* 神明圖片光暈背景 */}
-                    <div className="absolute inset-0 bg-gradient-radial from-[#d4af37]/20 via-transparent to-transparent blur-2xl scale-150" />
+                    {/* 神明圖片金色邊框 */}
+                    <div className="absolute -inset-2 border-4 border-[#d4af37] rounded-lg pointer-events-none" />
 
                     {/* 神明圖片 */}
                     <img
                         src={deity.image}
                         alt={deity.name}
-                        className="relative w-48 h-auto object-contain drop-shadow-2xl"
+                        className="relative max-h-[70vh] w-auto object-contain"
                         style={{
-                            filter: 'drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))'
+                            filter: 'drop-shadow(0 0 30px rgba(0, 0, 0, 0.5))'
                         }}
                     />
-
-                    {/* 裝飾框 */}
-                    <div className="absolute -inset-4 border-2 border-[#d4af37]/30 rounded-lg pointer-events-none" />
-                    <div className="absolute -inset-6 border border-[#d4af37]/20 rounded-xl pointer-events-none" />
                 </div>
-
-                {/* 神明名稱 */}
-                <h2 className="mt-6 text-3xl font-bold text-[#d4af37] tracking-widest">
-                    {deity.name}
-                </h2>
             </div>
 
             {/* Rising Stick - 從下方升起的靈籤 */}
