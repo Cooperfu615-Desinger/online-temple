@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 
 export default function ResultModal({ isOpen, result, deityName, onClose }) {
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const modalRef = useRef(null);
+
     if (!isOpen || !result) return null;
 
     const getLevelClass = (level) => {
@@ -13,9 +18,46 @@ export default function ResultModal({ isOpen, result, deityName, onClose }) {
         }
     };
 
+    const handleSaveImage = async () => {
+        if (!modalRef.current || isSaving) return;
+
+        setIsSaving(true);
+
+        try {
+            const canvas = await html2canvas(modalRef.current, {
+                backgroundColor: '#fff9e6',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+            });
+
+            // 創建下載連結
+            const link = document.createElement('a');
+            link.download = `${deityName}靈籤_${result.title}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            // 標記已儲存
+            setIsSaved(true);
+        } catch (error) {
+            console.error('儲存圖片失敗:', error);
+            alert('儲存圖片失敗，請稍後再試');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleClose = () => {
+        setIsSaved(false);
+        onClose();
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center backdrop-blur-md transition-opacity duration-300" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="paper-texture w-[90%] max-w-md min-h-[600px] p-8 relative animate-modal flex flex-col items-center border-l-4 border-r-4 border-double border-red-900/30">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center backdrop-blur-md transition-opacity duration-300" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+            <div
+                ref={modalRef}
+                className="paper-texture w-[90%] max-w-md min-h-[600px] p-8 relative animate-modal flex flex-col items-center border-l-4 border-r-4 border-double border-red-900/30"
+            >
 
                 {/* Corners */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-900/50 m-2"></div>
@@ -54,9 +96,19 @@ export default function ResultModal({ isOpen, result, deityName, onClose }) {
 
                 {/* Footer */}
                 <div className="mt-4 pt-4 border-t border-red-900/20 w-full text-center">
-                    <button onClick={onClose} className="text-red-900 border border-red-900 px-6 py-2 rounded hover:bg-red-900 hover:text-white transition font-serif tracking-widest">
-                        收下籤詩
-                    </button>
+                    {!isSaved ? (
+                        <button
+                            onClick={handleSaveImage}
+                            disabled={isSaving}
+                            className={`text-red-900 border border-red-900 px-6 py-2 rounded hover:bg-red-900 hover:text-white transition font-serif tracking-widest ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                        >
+                            {isSaving ? '儲存中...' : '收下籤詩'}
+                        </button>
+                    ) : (
+                        <div className="text-gray-500 text-sm tracking-wider font-serif">
+                            CREATED BY VIBE QUIRK LABS
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
