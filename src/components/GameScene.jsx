@@ -2,10 +2,172 @@ import React, { useState, useEffect } from 'react';
 import bwaYin from '../assets/bwa_yin.png';
 import bwaYang from '../assets/bwa_yang.png';
 
+// 精緻籤筒 SVG 元件
+const FortuneTubeSVG = ({ isShaking }) => (
+    <svg
+        width="180"
+        height="380"
+        viewBox="0 0 180 380"
+        className={`relative z-10 mt-20 origin-bottom ${isShaking ? 'animate-shake-intense' : ''}`}
+    >
+        <defs>
+            {/* 籤筒主體漸層 - 深紅木色 */}
+            <linearGradient id="tubeBodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#2d0a0a" />
+                <stop offset="20%" stopColor="#5c1818" />
+                <stop offset="50%" stopColor="#6d2c2c" />
+                <stop offset="80%" stopColor="#5c1818" />
+                <stop offset="100%" stopColor="#2d0a0a" />
+            </linearGradient>
+
+            {/* 籤筒內部深色漸層 */}
+            <linearGradient id="tubeInnerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#0a0202" />
+                <stop offset="100%" stopColor="#1a0505" />
+            </linearGradient>
+
+            {/* 金色裝飾漸層 */}
+            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ffd700" />
+                <stop offset="50%" stopColor="#b8860b" />
+                <stop offset="100%" stopColor="#8b6914" />
+            </linearGradient>
+
+            {/* 雲紋圖案 */}
+            <pattern id="cloudPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                <path
+                    d="M20 5 Q25 5 28 10 Q32 8 35 12 Q38 10 40 15 Q38 18 35 17 Q32 20 28 18 Q25 22 20 20 Q15 22 12 18 Q8 20 5 17 Q2 18 0 15 Q2 10 5 12 Q8 8 12 10 Q15 5 20 5Z"
+                    fill="none"
+                    stroke="url(#goldGradient)"
+                    strokeWidth="0.5"
+                    opacity="0.3"
+                />
+            </pattern>
+
+            {/* 筒口陰影濾鏡 */}
+            <filter id="innerShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur" />
+                <feOffset in="blur" dx="0" dy="5" result="offsetBlur" />
+                <feComposite in="SourceGraphic" in2="offsetBlur" operator="over" />
+            </filter>
+
+            {/* 發光濾鏡 */}
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+
+        {/* 籤筒主體 */}
+        <ellipse cx="90" cy="360" rx="70" ry="15" fill="#1a0505" /> {/* 底部陰影 */}
+        <path
+            d="M30 60 Q20 60 20 70 L20 340 Q20 360 40 360 L140 360 Q160 360 160 340 L160 70 Q160 60 150 60 Z"
+            fill="url(#tubeBodyGradient)"
+        />
+
+        {/* 雲紋裝飾層 */}
+        <path
+            d="M30 60 Q20 60 20 70 L20 340 Q20 360 40 360 L140 360 Q160 360 160 340 L160 70 Q160 60 150 60 Z"
+            fill="url(#cloudPattern)"
+        />
+
+        {/* 金色頂部邊框 */}
+        <ellipse cx="90" cy="60" rx="65" ry="12" fill="url(#goldGradient)" />
+        <ellipse cx="90" cy="60" rx="55" ry="8" fill="url(#tubeInnerGradient)" />
+
+        {/* 金色裝飾帶 - 上方 */}
+        <rect x="22" y="80" width="136" height="8" fill="url(#goldGradient)" rx="2" />
+        <path
+            d="M30 88 Q90 100 150 88"
+            stroke="url(#goldGradient)"
+            strokeWidth="1"
+            fill="none"
+        />
+
+        {/* 金色裝飾帶 - 中間 */}
+        <rect x="22" y="180" width="136" height="6" fill="url(#goldGradient)" rx="2" />
+
+        {/* 金色裝飾帶 - 下方 */}
+        <rect x="22" y="320" width="136" height="8" fill="url(#goldGradient)" rx="2" />
+        <path
+            d="M30 320 Q90 308 150 320"
+            stroke="url(#goldGradient)"
+            strokeWidth="1"
+            fill="none"
+        />
+
+        {/* 底座裝飾 */}
+        <ellipse cx="90" cy="360" rx="75" ry="18" fill="url(#goldGradient)" />
+        <ellipse cx="90" cy="360" rx="70" ry="15" fill="url(#tubeBodyGradient)" />
+
+        {/* 中央雕刻裝飾 - 福字簡化版 */}
+        <rect x="60" y="200" width="60" height="80" fill="none" stroke="url(#goldGradient)" strokeWidth="2" rx="5" />
+        <text x="90" y="255" textAnchor="middle" fill="url(#goldGradient)" fontSize="40" fontWeight="bold">福</text>
+    </svg>
+);
+
+// 精緻籤 SVG 元件
+const FortuneStickSVG = ({ state, style, className }) => (
+    <svg
+        width="30"
+        height="300"
+        viewBox="0 0 30 300"
+        className={className}
+        style={style}
+    >
+        <defs>
+            {/* 竹籤漸層 */}
+            <linearGradient id="stickGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#d4a574" />
+                <stop offset="30%" stopColor="#e8c9a0" />
+                <stop offset="70%" stopColor="#e8c9a0" />
+                <stop offset="100%" stopColor="#d4a574" />
+            </linearGradient>
+
+            {/* 紅色籤頭漸層 */}
+            <linearGradient id="redHeadGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8b0000" />
+                <stop offset="30%" stopColor="#cc0000" />
+                <stop offset="70%" stopColor="#cc0000" />
+                <stop offset="100%" stopColor="#8b0000" />
+            </linearGradient>
+
+            {/* 發光效果 */}
+            <filter id="stickGlow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+                <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+
+        {/* 竹籤主體 */}
+        <rect x="10" y="50" width="10" height="250" fill="url(#stickGradient)" rx="2" />
+
+        {/* 木紋紋理 */}
+        <line x1="12" y1="60" x2="12" y2="290" stroke="#c4956a" strokeWidth="0.5" opacity="0.5" />
+        <line x1="15" y1="55" x2="15" y2="295" stroke="#c4956a" strokeWidth="0.3" opacity="0.3" />
+        <line x1="18" y1="58" x2="18" y2="292" stroke="#c4956a" strokeWidth="0.5" opacity="0.5" />
+
+        {/* 紅色籤頭 */}
+        <rect x="8" y="0" width="14" height="55" fill="url(#redHeadGradient)" rx="3" />
+
+        {/* 籤頭裝飾線 */}
+        <line x1="10" y1="10" x2="20" y2="10" stroke="#ffd700" strokeWidth="1" opacity="0.8" />
+        <line x1="10" y1="45" x2="20" y2="45" stroke="#ffd700" strokeWidth="1" opacity="0.8" />
+    </svg>
+);
+
 export default function GameScene({ deity, onDrawComplete }) {
     const [isShaking, setIsShaking] = useState(false);
-    const [stickState, setStickState] = useState('hidden'); // hidden, dropping, dropped
+    const [stickState, setStickState] = useState('hidden'); // hidden, rising, risen
     const [btnState, setBtnState] = useState('start'); // start, drawing, reset
+    const [showGlow, setShowGlow] = useState(false);
 
     // Bwa Bwei State
     const [bwaBweiState, setBwaBweiState] = useState('idle'); // idle, prompt, throwing, result
@@ -16,22 +178,32 @@ export default function GameScene({ deity, onDrawComplete }) {
         if (isShaking) return;
         setIsShaking(true);
         setBtnState('drawing');
+        setStickState('hidden');
+        setShowGlow(false);
 
-        // Random shake duration 2-3s
+        // 劇烈搖晃 2 秒
         setTimeout(() => {
             setIsShaking(false);
-            setStickState('dropping');
 
-            // Wait for drop animation (1s) + a bit
+            // 搖晃結束後，籤開始升起
+            setStickState('rising');
+
+            // 升起動畫 1.5 秒後完成
             setTimeout(() => {
+                setStickState('risen');
+                setShowGlow(true);
+
+                // 抽取結果
                 const randomIndex = Math.floor(Math.random() * deity.data.length);
                 const result = deity.data[randomIndex];
 
-                // Instead of completing immediately, start Bwa Bwei flow
-                setPendingFortune(result);
-                setBwaBweiState('prompt');
+                // 短暫展示發光效果後，進入擲筊流程
+                setTimeout(() => {
+                    setPendingFortune(result);
+                    setBwaBweiState('prompt');
+                }, 800);
             }, 1500);
-        }, 2000 + Math.random() * 1000);
+        }, 2000);
     };
 
     const throwBwaBwei = () => {
@@ -68,6 +240,7 @@ export default function GameScene({ deity, onDrawComplete }) {
         setBwaBweiState('idle');
         setPendingFortune(null);
         setBwaBweiResult(null);
+        setShowGlow(false);
     };
 
     // Reset when deity changes
@@ -82,75 +255,36 @@ export default function GameScene({ deity, onDrawComplete }) {
                 {deity.name}
             </div>
 
-            {/* Falling Stick */}
-            <div className={`absolute z-20 pointer-events-none ${stickState === 'hidden' ? 'opacity-0' : ''} ${stickState === 'dropping' ? 'animate-drop' : ''}`} style={{ bottom: '35%' }}>
-                <svg width="30" height="240" viewBox="0 0 20 200">
-                    <defs>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <rect x="2" y="0" width="16" height="200" rx="1" fill="#eecfa1" stroke="#8B4513" strokeWidth="0.5" filter="url(#glow)" />
-                    <rect x="2" y="0" width="16" height="40" rx="1" fill="#b91c1c" />
-                    <text x="10" y="20" fontSize="14" fill="#ffd700" textAnchor="middle" dominantBaseline="middle" fontFamily="serif" fontWeight="bold">{deity.shortName[0]}</text>
-                    <text x="10" y="110" fontSize="12" fill="#5e2f0d" textAnchor="middle" dominantBaseline="middle" writingMode="tb" fontFamily="serif" letterSpacing="4">{deity.shortName}靈籤</text>
-                </svg>
+            {/* 筒內的籤 (靜態裝飾) */}
+            <div className="absolute z-5 flex gap-1" style={{ bottom: 'calc(50% + 80px)' }}>
+                {[...Array(7)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="opacity-60"
+                        style={{
+                            transform: `rotate(${(i - 3) * 3}deg) translateY(${Math.abs(i - 3) * 5}px)`,
+                        }}
+                    >
+                        <FortuneStickSVG />
+                    </div>
+                ))}
             </div>
 
-            {/* Tube */}
-            <div className={`relative origin-bottom z-10 mt-20 ${isShaking ? 'animate-shake' : ''}`}>
-                <svg width="260" height="360" viewBox="0 0 200 300" className="overflow-visible drop-shadow-2xl">
-                    <defs>
-                        <linearGradient id="bambooGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style={{ stopColor: '#2a1a15', stopOpacity: 1 }} />
-                            <stop offset="30%" style={{ stopColor: '#5c3a2e', stopOpacity: 1 }} />
-                            <stop offset="50%" style={{ stopColor: '#6d4c41', stopOpacity: 1 }} />
-                            <stop offset="70%" style={{ stopColor: '#5c3a2e', stopOpacity: 1 }} />
-                            <stop offset="100%" style={{ stopColor: '#2a1a15', stopOpacity: 1 }} />
-                        </linearGradient>
-                        <radialGradient id="holeGradient" cx="50%" cy="50%" r="50%">
-                            <stop offset="50%" style={{ stopColor: '#0f0808', stopOpacity: 1 }} />
-                            <stop offset="100%" style={{ stopColor: '#2a1a15', stopOpacity: 1 }} />
-                        </radialGradient>
-                    </defs>
-
-                    {/* Static Sticks */}
-                    <g transform="translate(0, 10)">
-                        <rect x="60" y="-30" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(-10 60 100)" />
-                        <rect x="80" y="-40" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(-5 80 100)" />
-                        <rect x="100" y="-45" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(0 100 100)" />
-                        <rect x="120" y="-35" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(6 120 100)" />
-                        <rect x="135" y="-25" width="12" height="150" fill="#c49a6c" stroke="#3e2723" transform="rotate(12 135 100)" />
-                        {/* Heads */}
-                        <rect x="60" y="-30" width="12" height="25" fill="#8B0000" transform="rotate(-10 60 100)" />
-                        <rect x="80" y="-40" width="12" height="25" fill="#8B0000" transform="rotate(-5 80 100)" />
-                        <rect x="100" y="-45" width="12" height="25" fill="#8B0000" transform="rotate(0 100 100)" />
-                        <rect x="120" y="-35" width="12" height="25" fill="#8B0000" transform="rotate(6 120 100)" />
-                        <rect x="135" y="-25" width="12" height="25" fill="#8B0000" transform="rotate(12 135 100)" />
-                    </g>
-
-                    {/* Body */}
-                    <g>
-                        <path d="M40,80 L160,80 L152,280 L48,280 Z" fill="url(#bambooGradient)" stroke="#1a0f0f" strokeWidth="2" />
-                        <ellipse cx="100" cy="80" rx="60" ry="15" fill="url(#holeGradient)" stroke="#3e2723" strokeWidth="2" />
-
-                        <path d="M41,100 Q100,115 159,100" fill="none" stroke="#d4af37" strokeWidth="4" strokeOpacity="0.8" />
-                        <path d="M47,260 Q100,275 153,260" fill="none" stroke="#d4af37" strokeWidth="4" strokeOpacity="0.8" />
-
-                        <rect x="75" y="125" width="50" height="110" fill="#8B0000" stroke="#d4af37" strokeWidth="2" rx="2">
-                            <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
-                        </rect>
-
-                        <text x="100" y="180" fontFamily="'Zhi Mang Xing', serif" fontSize="36" fill="#FFD700" textAnchor="middle" dominantBaseline="middle" writingMode="tb" style={{ textShadow: '1px 1px 2px black' }}>
-                            {deity.shortName}
-                        </text>
-                    </g>
-                </svg>
+            {/* Rising Stick - 升起的靈籤 */}
+            <div
+                className={`absolute z-20 pointer-events-none transition-all duration-300 ${stickState === 'hidden' ? 'opacity-0' : 'opacity-100'
+                    } ${stickState === 'rising' ? 'animate-rise-up' : ''
+                    } ${stickState === 'risen' ? 'risen-position' : ''
+                    } ${showGlow ? 'animate-glow-pulse' : ''}`}
+                style={{
+                    bottom: stickState === 'hidden' ? 'calc(50% + 50px)' : undefined,
+                }}
+            >
+                <FortuneStickSVG state={stickState} />
             </div>
+
+            {/* Fortune Tube SVG */}
+            <FortuneTubeSVG isShaking={isShaking} />
 
             {/* Buttons */}
             <div className="absolute bottom-16 w-full flex justify-center z-30">

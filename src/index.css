@@ -126,7 +126,140 @@ body {
   animation: incense-smoke 4s infinite linear;
 }
 
-/* 繼承原有的搖晃與掉落動畫 */
+/* --- 籤筒搖晃動畫 (劇烈版) --- */
+@keyframes shakeIntense {
+
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0) translateY(0);
+  }
+
+  5% {
+    transform: rotate(-8deg) translateX(-8px) translateY(3px);
+  }
+
+  10% {
+    transform: rotate(8deg) translateX(8px) translateY(-2px);
+  }
+
+  15% {
+    transform: rotate(-10deg) translateX(-10px) translateY(4px);
+  }
+
+  20% {
+    transform: rotate(10deg) translateX(10px) translateY(-3px);
+  }
+
+  25% {
+    transform: rotate(-12deg) translateX(-12px) translateY(5px);
+  }
+
+  30% {
+    transform: rotate(12deg) translateX(12px) translateY(-4px);
+  }
+
+  35% {
+    transform: rotate(-10deg) translateX(-10px) translateY(4px);
+  }
+
+  40% {
+    transform: rotate(10deg) translateX(10px) translateY(-3px);
+  }
+
+  45% {
+    transform: rotate(-8deg) translateX(-8px) translateY(3px);
+  }
+
+  50% {
+    transform: rotate(8deg) translateX(8px) translateY(-2px);
+  }
+
+  55% {
+    transform: rotate(-10deg) translateX(-10px) translateY(4px);
+  }
+
+  60% {
+    transform: rotate(10deg) translateX(10px) translateY(-3px);
+  }
+
+  65% {
+    transform: rotate(-12deg) translateX(-12px) translateY(5px);
+  }
+
+  70% {
+    transform: rotate(12deg) translateX(12px) translateY(-4px);
+  }
+
+  75% {
+    transform: rotate(-8deg) translateX(-8px) translateY(3px);
+  }
+
+  80% {
+    transform: rotate(8deg) translateX(8px) translateY(-2px);
+  }
+
+  85% {
+    transform: rotate(-5deg) translateX(-5px) translateY(2px);
+  }
+
+  90% {
+    transform: rotate(5deg) translateX(5px) translateY(-1px);
+  }
+
+  95% {
+    transform: rotate(-2deg) translateX(-2px) translateY(1px);
+  }
+}
+
+.animate-shake-intense {
+  animation: shakeIntense 2s ease-in-out;
+  transform-origin: bottom center;
+}
+
+/* --- 籤升起動畫 --- */
+@keyframes riseUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.3;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-280px) rotate(-2deg);
+    opacity: 1;
+  }
+}
+
+.animate-rise-up {
+  animation: riseUp 1.5s ease-out forwards;
+}
+
+.risen-position {
+  transform: translateY(-280px) rotate(-2deg);
+  bottom: calc(50% + 50px);
+}
+
+/* --- 發光脈動效果 --- */
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.2));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 45px rgba(255, 215, 0, 0.4));
+  }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+/* 保留舊版動畫以相容 */
 @keyframes shake {
   0% {
     transform: rotate(0deg);
@@ -151,29 +284,6 @@ body {
 
 .animate-shake {
   animation: shake 0.5s ease-in-out infinite;
-}
-
-@keyframes dropStick {
-  0% {
-    transform: translateY(0) rotate(0) scale(0.8);
-    opacity: 0;
-  }
-
-  30% {
-    opacity: 1;
-    transform: translateY(-100px) rotate(-5deg) scale(0.8);
-  }
-
-  100% {
-    transform: translateY(300px) rotate(10deg) scale(1.5);
-    opacity: 1;
-  }
-
-  /* 放大 */
-}
-
-.animate-drop {
-  animation: dropStick 1s cubic-bezier(0.5, 0, 0.8, 1) forwards;
 }
 
 @keyframes modalShow {
