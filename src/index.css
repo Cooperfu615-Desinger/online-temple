@@ -216,30 +216,25 @@ body {
   transform-origin: bottom center;
 }
 
-/* --- 籤升起動畫 --- */
-@keyframes riseUp {
+/* --- 籤從下方升起動畫 --- */
+@keyframes appearUp {
   0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0.3;
+    transform: translateY(500px);
+    opacity: 0;
   }
 
-  20% {
+  30% {
     opacity: 1;
   }
 
   100% {
-    transform: translateY(-280px) rotate(-2deg);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
-.animate-rise-up {
-  animation: riseUp 1.5s ease-out forwards;
-}
-
-.risen-position {
-  transform: translateY(-280px) rotate(-2deg);
-  bottom: calc(50% + 50px);
+.animate-appear-up {
+  animation: appearUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* --- 發光脈動效果 --- */
