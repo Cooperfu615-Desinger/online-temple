@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 
 export default function ResultModal({ isOpen, result, deityName, onClose }) {
     const [isSaved, setIsSaved] = useState(false);
@@ -24,24 +24,53 @@ export default function ResultModal({ isOpen, result, deityName, onClose }) {
         setIsSaving(true);
 
         try {
-            const canvas = await html2canvas(modalRef.current, {
+            // 使用 html-to-image，Safari 相容性更好
+            const dataUrl = await toPng(modalRef.current, {
                 backgroundColor: '#fff9e6',
-                scale: 2,
-                useCORS: true,
-                logging: false,
+                pixelRatio: 2,
+                cacheBust: true,
             });
 
             // 創建下載連結
             const link = document.createElement('a');
             link.download = `${deityName}靈籤_${result.title}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href = dataUrl;
+
+            // Safari 需要先添加到 DOM 再點擊
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
 
             // 標記已儲存
             setIsSaved(true);
         } catch (error) {
             console.error('儲存圖片失敗:', error);
-            alert('儲存圖片失敗，請稍後再試');
+
+            // 備用方案：使用 Canvas API 自動下載
+            try {
+                const dataUrl = await toPng(modalRef.current, {
+                    backgroundColor: '#fff9e6',
+                    pixelRatio: 2,
+                });
+
+                // 開啟新視窗顯示圖片（Safari 備用方案）
+                const newWindow = window.open();
+                if (newWindow) {
+                    newWindow.document.write(`
+                        <html>
+                            <head><title>${deityName}靈籤 - ${result.title}</title></head>
+                            <body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a0f0f;">
+                                <img src="${dataUrl}" style="max-width:100%;height:auto;" />
+                            </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
+                }
+                setIsSaved(true);
+            } catch (fallbackError) {
+                console.error('備用方案也失敗:', fallbackError);
+                alert('儲存圖片失敗，請長按圖片手動儲存');
+            }
         } finally {
             setIsSaving(false);
         }
